@@ -10,10 +10,10 @@ on:
       target_env:
         description: 'Environment to deploy to'
         required: true
-        default: 'staging'
+        default: 'dev'
         type: choice
         options:
-          - staging
+          - dev
           - production
 
 jobs:
