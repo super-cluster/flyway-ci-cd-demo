@@ -34,6 +34,11 @@ jobs:
     needs: build_and_test
     runs-on: ubuntu-latest
     
+    # This key tells GitHub to pull secrets from the specific Environment you created,
+    # rather than just the general Repository secrets. Change "production" to whatever
+    # you named your environment in the GitHub UI!
+    environment: production
+    
     services:
       # We define a generic postgres instance here solely to simulate
       # an external production environment for testing explicit CI/CD deployments.
