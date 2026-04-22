@@ -5,6 +5,16 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
 
 jobs:
   build_and_test:
@@ -34,10 +44,9 @@ jobs:
     needs: build_and_test
     runs-on: ubuntu-latest
     
-    # This key tells GitHub to pull secrets from the specific Environment you created,
-    # rather than just the general Repository secrets. Change "production" to whatever
-    # you named your environment in the GitHub UI!
-    environment: production
+    # This pulls from the manual trigger input, but defaults to 'production' 
+    # if it was an automatic trigger (e.g. from pushing to the main branch).
+    environment: ${{ github.event.inputs.target_env || 'production' }}
     
     services:
       # We define a generic postgres instance here solely to simulate
