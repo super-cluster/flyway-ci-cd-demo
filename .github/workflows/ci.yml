@@ -80,12 +80,12 @@ jobs:
       # DEPLOY_DB_URL       = jdbc:postgresql://localhost:5432/prod_db 
       # DEPLOY_DB_USER      = prod_user
       # DEPLOY_DB_PASSWORD  = prod_password
-      run: >
-        mvn flyway:migrate 
-        -Dflyway.url=${{ secrets.DEPLOY_DB_URL }} 
-        -Dflyway.user=${{ secrets.DEPLOY_DB_USER }} 
-        -Dflyway.password=${{ secrets.DEPLOY_DB_PASSWORD }}
-        -Dflyway.locations=classpath:db/migration
+      run: |
+        mvn flyway:migrate \
+          -Dflyway.url="${{ secrets.DEPLOY_DB_URL }}" \
+          -Dflyway.user="${{ secrets.DEPLOY_DB_USER }}" \
+          -Dflyway.password="${{ secrets.DEPLOY_DB_PASSWORD }}" \
+          -Dflyway.locations="classpath:db/migration"
 
     - name: Deploy Container
       run: echo "Code that promotes or swaps container images in production goes here."
