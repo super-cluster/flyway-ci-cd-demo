@@ -44,9 +44,9 @@ jobs:
     needs: build_and_test
     runs-on: ubuntu-latest
     
-    # This pulls from the manual trigger input, but defaults to 'production' 
+    # This pulls from the manual trigger input, but defaults to 'dev' 
     # if it was an automatic trigger (e.g. from pushing to the main branch).
-    environment: ${{ github.event.inputs.target_env || 'production' }}
+    environment: ${{ github.event.inputs.target_env || 'dev' }}
     
     services:
       # We define a generic postgres instance here solely to simulate
