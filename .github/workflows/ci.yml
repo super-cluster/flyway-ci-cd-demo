@@ -78,7 +78,7 @@ jobs:
 
     - name: Production Database Migration
       # To test secrets, you must configure the following in your GitHub Repository settings:
-      # DEPLOY_DB_URL       = jdbc:postgresql://localhost:5432/prod_db 
+      # DEPLOY_DB_URL       = jdbc:postgresql://localhost:5432/prod_db
       # DEPLOY_DB_USER      = prod_user
       # DEPLOY_DB_PASSWORD  = prod_password
       run: |
