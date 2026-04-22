@@ -62,14 +62,15 @@ jobs:
         cache: maven
 
     - name: Production Database Migration
-      # Best Practice: We apply migrations explicitly during the deployment phase
-      # of CI/CD, preventing our actual Application pods/instances from contending
-      # with lock races on startup.
+      # To test secrets, you must configure the following in your GitHub Repository settings:
+      # DEPLOY_DB_URL       = jdbc:postgresql://localhost:5432/prod_db 
+      # DEPLOY_DB_USER      = prod_user
+      # DEPLOY_DB_PASSWORD  = prod_password
       run: >
         mvn flyway:migrate 
-        -Dflyway.url=jdbc:postgresql://localhost:5432/prod_db 
-        -Dflyway.user=prod_user 
-        -Dflyway.password=prod_password
+        -Dflyway.url=${{ secrets.DEPLOY_DB_URL }} 
+        -Dflyway.user=${{ secrets.DEPLOY_DB_USER }} 
+        -Dflyway.password=${{ secrets.DEPLOY_DB_PASSWORD }}
         -Dflyway.locations=classpath:db/migration
 
     - name: Deploy Container
