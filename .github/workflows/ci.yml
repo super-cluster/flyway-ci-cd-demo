@@ -38,7 +38,8 @@ jobs:
       run: mvn -B clean verify
       
     - name: Build Docker Image
-      run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=yours/flyway-demo:latest
+      # We use the standard Docker CLI to build the image using our new Dockerfile.
+      run: docker build -t yours/flyway-demo:latest .
 
   deploy:
     needs: build_and_test
