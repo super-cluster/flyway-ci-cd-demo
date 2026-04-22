@@ -34,9 +34,22 @@ jobs:
     needs: build_and_test
     runs-on: ubuntu-latest
     
-    # Notice we NO LONGER have a 'services:' block spinning up a local mock database.
-    # The GitHub Runner will now reach out over the public internet to connect
-    # to your actual Production database hosted in AWS, Azure, etc.
+    services:
+      # We define a generic postgres instance here solely to simulate
+      # an external production environment for testing explicit CI/CD deployments.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: prod_user
+          POSTGRES_PASSWORD: prod_password
+          POSTGRES_DB: prod_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
@@ -49,19 +62,15 @@ jobs:
         cache: maven
 
     - name: Production Database Migration
-      # Best Practice: NEVER hardcode IPs or passwords!
-      # We pull these from GitHub Secrets.
+      # Best Practice: We apply migrations explicitly during the deployment phase
+      # of CI/CD, preventing our actual Application pods/instances from contending
+      # with lock races on startup.
       run: >
         mvn flyway:migrate 
-        -Dflyway.url=jdbc:postgresql://${{ secrets.PROD_DB_HOST }}:${{ secrets.PROD_DB_PORT }}/${{ secrets.PROD_DB_NAME }}
-        -Dflyway.user=${{ secrets.PROD_DB_USER }}
-        -Dflyway.password=${{ secrets.PROD_DB_PASSWORD }}
+        -Dflyway.url=jdbc:postgresql://localhost:5432/prod_db 
+        -Dflyway.user=prod_user 
+        -Dflyway.password=prod_password
         -Dflyway.locations=classpath:db/migration
 
-    - name: Trigger Real Production Deployment
-      # After the database is successfully upgraded, we tell our cluster to deploy the new code.
-      # This simulates hitting a webhook or using SSH to trigger a kubernetes rollout.
-      run: |
-        echo "Contacting deployment orchestrator at https://deploy.mycompany.com..."
-        # Simulate: curl -X POST -H "Authorization: Bearer ${{ secrets.DEPLOY_TOKEN }}" https://deploy.mycompany.com/webhook
-        echo "Successfully instructed cluster to pull and deploy the new flyway-demo:latest image!"
+    - name: Deploy Container
+      run: echo "Code that promotes or swaps container images in production goes here."
