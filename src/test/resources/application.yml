@@ -1,0 +1,3 @@
+spring:
+  flyway:
+    enabled: true # Keep enabled in tests so Testcontainers spins up a migrated database automatically.

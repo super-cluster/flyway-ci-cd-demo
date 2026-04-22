@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/flyway_demo
+    username: fp_user
+    password: fp_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate # Crucial: Let Flyway manage the schema, JPA only validates it
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: false # Best practice: disable on app startup to prevent lock contention or race conditions across multiple instances. Migrate explicitly via CI/CD pipelines instead.
+    locations: classpath:db/migration
+
+server:
+  port: 8080

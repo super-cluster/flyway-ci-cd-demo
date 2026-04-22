@@ -1,0 +1,76 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    # No need to configure a separate services section for Postgres here 
+    # because our integration tests use Testcontainers, which will spin up
+    # its own Docker container during the 'mvn test' phase.
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Build and Test
+      run: mvn -B clean verify
+      
+    - name: Build Docker Image
+      run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=yours/flyway-demo:latest
+
+  deploy:
+    needs: build_and_test
+    runs-on: ubuntu-latest
+    
+    services:
+      # We define a generic postgres instance here solely to simulate
+      # an external production environment for testing explicit CI/CD deployments.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: prod_user
+          POSTGRES_PASSWORD: prod_password
+          POSTGRES_DB: prod_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Production Database Migration
+      # Best Practice: We apply migrations explicitly during the deployment phase
+      # of CI/CD, preventing our actual Application pods/instances from contending
+      # with lock races on startup.
+      run: >
+        mvn flyway:migrate 
+        -Dflyway.url=jdbc:postgresql://localhost:5432/prod_db 
+        -Dflyway.user=prod_user 
+        -Dflyway.password=prod_password
+        -Dflyway.locations=classpath:db/migration
+
+    - name: Deploy Container
+      run: echo "Code that promotes or swaps container images in production goes here."
